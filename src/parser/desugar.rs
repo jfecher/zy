@@ -60,6 +60,7 @@ pub fn desugar_operators<'a>(operator: Token, lhs: Ast<'a>, rhs: Ast<'a>, locati
             Some(Token::ApplyRight) => prepend_argument_to_function(rhs, lhs, location),
             Some(Token::And) => Ast::if_expr(lhs, rhs, Some(Ast::bool_literal(false, location)), location),
             Some(Token::Or) => Ast::if_expr(lhs, Ast::bool_literal(true, location), Some(rhs), location),
+            Some(Token::Else) => create_else_match(lhs, rhs, location),
             Some(operator_token) => {
                 let operator = Ast::operator(operator_token, location);
                 Ast::function_call(operator, vec![lhs, rhs], location)
@@ -70,6 +71,14 @@ pub fn desugar_operators<'a>(operator: Token, lhs: Ast<'a>, rhs: Ast<'a>, locati
 
     let operator_symbol = Ast::operator(operator, location);
     desugar_explicit_currying(operator_symbol, vec![lhs, rhs], call_operator_function, location)
+}
+
+fn create_else_match<'a>(lhs: Ast<'a>, rhs: Ast<'a>, location: Location<'a>) -> Ast<'a> {
+    let x = Ast::variable(vec![], "x".to_owned(), location);
+    let some = Ast::type_constructor(vec!["prelude".to_owned()], "Some".to_owned(), location);
+    let some_x = Ast::function_call(some, vec![x.clone()], location);
+    let none = Ast::type_constructor(vec!["prelude".to_owned()], "None".to_owned(), location);
+    Ast::match_expr(lhs, vec![(some_x, x), (none, rhs)], location)
 }
 
 fn prepend_argument_to_function<'a>(f: Ast<'a>, arg: Ast<'a>, location: Location<'a>) -> Ast<'a> {
