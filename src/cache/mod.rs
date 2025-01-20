@@ -131,6 +131,8 @@ pub struct ModuleCache<'a> {
     pub error_count: usize,
 
     pub file_cache: FileCache,
+
+    pub maybe_type: Option<TypeInfoId>,
 }
 
 pub type FileCache = HashMap<PathBuf, String>;
@@ -417,6 +419,7 @@ impl<'a> ModuleCache<'a> {
             global_dependency_graph: DependencyGraph::default(),
             diagnostics: Vec::new(),
             error_count: 0,
+            maybe_type: None,
             file_cache,
         }
     }
